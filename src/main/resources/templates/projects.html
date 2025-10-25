@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>All Projects</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container mt-5">
+    <h2>Projects</h2>
+    <a href="/project/new" class="btn btn-success mb-3">Add New Project</a>
+    <table class="table table-bordered">
+        <thead>
+        <tr>
+            <th>Title</th>
+            <th>Description</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>User</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="project : ${projects}">
+            <td th:text="${project.title}"></td>
+            <td th:text="${project.description}"></td>
+            <td th:text="${project.startDate}"></td>
+            <td th:text="${project.endDate}"></td>
+            <td th:text="${project.user.name}"></td>
+            <td>
+                <a th:href="@{'/project/edit/' + ${project.id}}" class="btn btn-warning btn-sm">Edit</a>
+                <a th:href="@{'/project/delete/' + ${project.id}}" class="btn btn-danger btn-sm">Delete</a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

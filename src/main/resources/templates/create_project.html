@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title th:text="${project.id != null} ? 'Edit Project' : 'Create Project'">Create Project</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container mt-5">
+    <h2 th:text="${project.id != null} ? 'Edit Project' : 'Create Project'"></h2>
+    <form th:action="@{/project/save}" th:object="${project}" method="post">
+        <div class="mb-3">
+            <label class="form-label">Title</label>
+            <input type="text" th:field="*{title}" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea th:field="*{description}" class="form-control" rows="3" required></textarea>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Start Date</label>
+            <input type="date" th:field="*{startDate}" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">End Date</label>
+            <input type="date" th:field="*{endDate}" class="form-control" required>
+        </div>
+        <div class="mb-3" th:if="${#authentication != null and #authentication.name == 'admin'}">
+            <label class="form-label">Assign to User</label>
+            <select name="userId" class="form-control">
+                <option th:each="u : ${users}" 
+                        th:value="${u.id}" 
+                        th:text="${u.name}" 
+                        th:selected="${project.user != null} ? ${project.user.id} == ${u.id} : false">
+                </option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Save</button>
+    </form>
+</div>
+</body>
+</html>
