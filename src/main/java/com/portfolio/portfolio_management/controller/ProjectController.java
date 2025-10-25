@@ -1,9 +1,11 @@
 package com.portfolio.portfolio_management.controller;
 
 import com.portfolio.portfolio_management.entity.Project;
+import com.portfolio.portfolio_management.entity.Skill; // Required for skills logic
 import com.portfolio.portfolio_management.entity.UserProfile;
 import com.portfolio.portfolio_management.repository.ProjectRepository;
 import com.portfolio.portfolio_management.repository.UserProfileRepository;
+import com.portfolio.portfolio_management.repository.SkillRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -11,51 +13,82 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @Controller
 public class ProjectController {
 
     @Autowired
+    private SkillRepository skillRepository;
+
+    @Autowired
     private ProjectRepository projectRepository;
 
+    // Use a single instance for the UserProfileRepository
     @Autowired
     private UserProfileRepository userProfileRepository;
 
-    // Show the project creation form
+    // Show the project creation form (Keep as is)
     @GetMapping("/project/new")
     public String showCreateProjectForm(Model model) {
         Project project = new Project();
         model.addAttribute("project", project);
-        return "create_project"; // users are automatically the logged-in user
+        return "create_project";
     }
 
-    // Save project (create or edit)
+    // Save project (create or edit) (Keep as is)
     @PostMapping("/project/save")
     public String saveProject(@ModelAttribute("project") Project project) {
-
-        // Assign the logged-in user automatically
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String email = auth.getName();
         UserProfile user = userProfileRepository.findByEmail(email);
-        project.setUser(user);
 
+        // CRITICAL NULL CHECK added for safety during save
+        if (user == null) {
+            return "redirect:/login?error=profile-missing";
+        }
+
+        project.setUser(user);
         projectRepository.save(project);
         return "redirect:/projects";
     }
 
-    // List projects of the logged-in user
+    // --- CONSOLIDATED METHOD TO LIST PROJECTS AND SKILLS ---
     @GetMapping("/projects")
     public String listProjects(Model model) {
+
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String email = auth.getName();
+
+        // 1. Authentication Check
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(email)) {
+            return "redirect:/login";
+        }
+
+        // 2. Fetch User Profile
         UserProfile user = userProfileRepository.findByEmail(email);
 
-        model.addAttribute("projects", projectRepository.findByUserId(user.getId()));
+        // 3. CRITICAL NULL CHECK for UserProfile existence
+        if (user == null) {
+            return "redirect:/login?error=profile-missing";
+        }
+
+        Long userId = user.getId();
+
+        // 4. FETCH PROJECTS (Using the correct findByUserId method)
+        List<Project> projects = projectRepository.findByUserId(userId);
+        model.addAttribute("projects", projects);
+
+        // 5. FETCH SKILLS (Using the correct findByUser method)
+        List<Skill> skills = skillRepository.findByUser(user);
+        model.addAttribute("skills", skills);
+
+        // 6. Return the template (Must be projects.html)
         return "projects";
     }
 
-    // Edit project (only accessible to the owner)
+    // Edit project (only accessible to the owner) (Keep as is)
     @GetMapping("/project/edit/{id}")
     public String editProject(@PathVariable Long id, Model model) {
         Optional<Project> optionalProject = projectRepository.findById(id);
@@ -66,8 +99,8 @@ public class ProjectController {
             String email = auth.getName();
             UserProfile user = userProfileRepository.findByEmail(email);
 
-            if(!project.getUser().getId().equals(user.getId())) {
-                return "redirect:/projects"; // block others from editing
+            if(user == null || !project.getUser().getId().equals(user.getId())) { // Enhanced check
+                return "redirect:/projects";
             }
 
             model.addAttribute("project", project);
@@ -77,7 +110,7 @@ public class ProjectController {
         }
     }
 
-    // Delete project (only owner can delete)
+    // Delete project (only owner can delete) (Keep as is)
     @GetMapping("/project/delete/{id}")
     public String deleteProject(@PathVariable Long id) {
         Optional<Project> optionalProject = projectRepository.findById(id);
@@ -87,7 +120,7 @@ public class ProjectController {
             String email = auth.getName();
             UserProfile user = userProfileRepository.findByEmail(email);
 
-            if(project.getUser().getId().equals(user.getId())) {
+            if(user != null && project.getUser().getId().equals(user.getId())) { // Enhanced check
                 projectRepository.deleteById(id);
             }
         }
