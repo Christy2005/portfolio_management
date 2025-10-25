@@ -6,6 +6,7 @@
 </head>
 <body>
 <div class="container mt-5">
+
     <h2>Projects</h2>
     <a href="/project/new" class="btn btn-success mb-3">Add New Project</a>
     <table class="table table-bordered">
@@ -63,6 +64,50 @@
             </tbody>
         </table>
     </div>
-</div>
-</body>
+
+    <hr class="my-5">
+
+    <div class="mt-5">
+        <h2>My Achievements</h2>
+
+        <form th:action="@{/achievements/add}" method="post" class="mb-4">
+            <div class="row g-3 align-items-center">
+                <div class="col-3">
+                    <input type="text" name="title" placeholder="Achievement Title" class="form-control" required>
+                </div>
+                <div class="col-5">
+                    <input type="text" name="description" placeholder="Description" class="form-control" required>
+                </div>
+                <div class="col-2">
+                    <input type="text" name="year" placeholder="Year" class="form-control" required>
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary">Add Achievement</button>
+                </div>
+            </div>
+        </form>
+
+        <table class="table table-striped table-sm">
+            <thead>
+            <tr>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Year</th>
+                <th>Action</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="achievement : ${achievements}">
+                <td th:text="${achievement.title}"></td>
+                <td th:text="${achievement.description}"></td>
+                <td th:text="${achievement.year}"></td>
+                <td>
+                    <a th:href="@{/achievements/delete/{id}(id=${achievement.id})}" class="btn btn-danger btn-sm">Delete</a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div> </body>
 </html>

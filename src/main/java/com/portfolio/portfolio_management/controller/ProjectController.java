@@ -12,7 +12,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
+import com.portfolio.portfolio_management.repository.AchievementRepository;
+import com.portfolio.portfolio_management.entity.Achievement;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,7 +29,8 @@ public class ProjectController {
     // Use a single instance for the UserProfileRepository
     @Autowired
     private UserProfileRepository userProfileRepository;
-
+    @Autowired // NEW INJECTION
+    private AchievementRepository achievementRepository;
     // Show the project creation form (Keep as is)
     @GetMapping("/project/new")
     public String showCreateProjectForm(Model model) {
@@ -83,7 +85,8 @@ public class ProjectController {
         // 5. FETCH SKILLS (Using the correct findByUser method)
         List<Skill> skills = skillRepository.findByUser(user);
         model.addAttribute("skills", skills);
-
+        List<Achievement> achievements = achievementRepository.findByUser(user);
+        model.addAttribute("achievements", achievements); // <-- NEW MODEL ATTRIBUTE
         // 6. Return the template (Must be projects.html)
         return "projects";
     }
