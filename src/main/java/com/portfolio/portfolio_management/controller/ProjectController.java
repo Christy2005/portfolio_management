@@ -46,7 +46,6 @@ public class ProjectController {
         String email = auth.getName();
         UserProfile user = userProfileRepository.findByEmail(email);
 
-        // CRITICAL NULL CHECK added for safety during save
         if (user == null) {
             return "redirect:/login?error=profile-missing";
         }
@@ -56,7 +55,6 @@ public class ProjectController {
         return "redirect:/projects";
     }
 
-    // --- CONSOLIDATED METHOD TO LIST PROJECTS AND SKILLS ---
     @GetMapping("/projects")
     public String listProjects(Model model) {
 
@@ -71,18 +69,17 @@ public class ProjectController {
         // 2. Fetch User Profile
         UserProfile user = userProfileRepository.findByEmail(email);
 
-        // 3. CRITICAL NULL CHECK for UserProfile existence
+
         if (user == null) {
             return "redirect:/login?error=profile-missing";
         }
 
         Long userId = user.getId();
 
-        // 4. FETCH PROJECTS (Using the correct findByUserId method)
         List<Project> projects = projectRepository.findByUserId(userId);
         model.addAttribute("projects", projects);
 
-        // 5. FETCH SKILLS (Using the correct findByUser method)
+
         List<Skill> skills = skillRepository.findByUser(user);
         model.addAttribute("skills", skills);
         List<Achievement> achievements = achievementRepository.findByUser(user);
@@ -91,7 +88,6 @@ public class ProjectController {
         return "projects";
     }
 
-    // Edit project (only accessible to the owner) (Keep as is)
     @GetMapping("/project/edit/{id}")
     public String editProject(@PathVariable Long id, Model model) {
         Optional<Project> optionalProject = projectRepository.findById(id);
